@@ -16,8 +16,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Loader2Icon } from "lucide-react";
+import { AlertCircleIcon, Loader2Icon } from "lucide-react";
 import { PasswordInput } from "@/components/password-input";
+import { useEffect, useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const registerSchema = z
   .object({
@@ -32,12 +34,13 @@ const registerSchema = z
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-export const RegisterPage = ({
+export default function RegisterPage({
   className,
   ...props
-}: React.ComponentProps<"form">) => {
+}: React.ComponentProps<"form">) {
   const navigate = useNavigate();
   const setUser = useAuthStore((s) => s.setUser);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -55,14 +58,22 @@ export const RegisterPage = ({
     });
 
     if (error) {
+      setError(error.message);
       return;
     }
 
     if (authData.user) {
+      setError(null);
       setUser(authData.user);
       navigate("/");
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      setTimeout(() => setError(null), 5000); // Limpiar el error después de 5 segundos
+    }
+  }, [error]);
 
   return (
     <Form {...form}>
@@ -87,7 +98,11 @@ export const RegisterPage = ({
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="m@example.com" {...field} />
+                    <Input
+                      placeholder="m@example.com"
+                      type="email"
+                      {...field}
+                    />
                   </FormControl>
                   {/* <FormDescription>
                     This is your public display name.
@@ -145,6 +160,17 @@ export const RegisterPage = ({
             Create Account
             {/* <Loader2Icon className="animate-spin" />  */}
           </Button>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircleIcon />
+              <AlertTitle>Error al crear cuenta</AlertTitle>
+              <AlertDescription>
+                Este correo ya está registrado o hubo un error al crear la
+                cuenta.
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
             <span className="bg-background text-muted-foreground relative z-10 px-2">
               Or continue with
@@ -180,4 +206,4 @@ export const RegisterPage = ({
       </form>
     </Form>
   );
-};
+}

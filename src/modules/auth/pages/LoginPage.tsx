@@ -16,8 +16,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
-import { Loader2Icon } from "lucide-react";
+import { AlertCircleIcon, Loader2Icon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useEffect, useState } from "react";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Email inválido" }),
@@ -28,12 +30,13 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export const LoginPage = ({
+export default function LoginPage({
   className,
   ...props
-}: React.ComponentProps<"form">) => {
+}: React.ComponentProps<"form">) {
   const navigate = useNavigate();
   const setUser = useAuthStore((s) => s.setUser);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -50,14 +53,23 @@ export const LoginPage = ({
     });
 
     if (error) {
+      setError(error.message);
+      console.error("Error al iniciar sesión:", error);
       return;
     }
 
     if (authData.user) {
+      setError(null);
       setUser(authData.user);
       navigate("/"); // ir al dashboard (raíz protegida)
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      setTimeout(() => setError(null), 5000); // Limpiar el error después de 5 segundos
+    }
+  }, [error]);
 
   return (
     <Form {...form}>
@@ -100,12 +112,12 @@ export const LoginPage = ({
                 <FormItem>
                   <FormLabel>
                     Password
-                    <a
-                      href="#"
+                    <Link
+                      to="/forgot-password"
                       className="ml-auto text-sm underline-offset-4 hover:underline text-accent-foreground"
                     >
                       Forgot your password?
-                    </a>
+                    </Link>
                   </FormLabel>
                   <FormControl>
                     <PasswordInput {...field} />
@@ -129,6 +141,16 @@ export const LoginPage = ({
             Login
             {/* <Loader2Icon className="animate-spin" />  */}
           </Button>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircleIcon />
+              <AlertTitle>Error al iniciar sesión</AlertTitle>
+              <AlertDescription>
+                Please verify your information account.
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
             <span className="bg-background text-muted-foreground relative z-10 px-2">
               Or continue with
@@ -164,4 +186,4 @@ export const LoginPage = ({
       </form>
     </Form>
   );
-};
+}

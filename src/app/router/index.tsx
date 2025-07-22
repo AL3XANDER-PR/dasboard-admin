@@ -8,12 +8,22 @@ import {
 import { AuthLayout } from "../layout/AuthLayout";
 import { MainLayout } from "../layout/MainLayout";
 
-import { RegisterPage } from "@/modules/auth/pages/RegisterPage";
-import { DashboardPage } from "@/modules/dashboard/pages/DashboardPage";
-import { LoginPage } from "@/modules/auth/pages/LoginPage";
 import { PublicOnlyRoute } from "../guards/PublicOnlyRoute";
 import { ProtectedRoute } from "../guards/ProtectedRoute";
 import { NotFoundRouter } from "@/shared/pages/NotFoundRouter";
+import { lazy } from "react";
+
+const LoginPage = lazy(() => import("@/modules/auth/pages/LoginPage"));
+const RegisterPage = lazy(() => import("@/modules/auth/pages/RegisterPage"));
+const DashboardPage = lazy(
+  () => import("@/modules/dashboard/pages/DashboardPage")
+);
+const ForgotPassword = lazy(
+  () => import("@/modules/auth/pages/ForgotPassword")
+);
+const UpdatePassword = lazy(
+  () => import("@/modules/auth/pages/UpdatePassword")
+);
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -23,13 +33,20 @@ export const router = createBrowserRouter(
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
       </Route>
 
-      <Route element={<ProtectedRoute />}>
+      <Route path="/" element={<ProtectedRoute />}>
         <Route element={<MainLayout />}>
           <Route index element={<DashboardPage />} />
+          {/* <Route path="/update-password" element={<UpdatePassword />} /> */}
         </Route>
+      </Route>
+
+      {/* RUTA INDEPENDIENTE: /reset-password CON AuthLayout pero SIN guard */}
+      <Route element={<AuthLayout />}>
+        <Route path="/update-password" element={<UpdatePassword />} />
       </Route>
 
       {/* ✅ Solo un punto central para el 404 */}
