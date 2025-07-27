@@ -1,63 +1,39 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase";
-import { type User } from "@supabase/supabase-js";
-
-import { devtools, persist } from "zustand/middleware";
+import { type Session, type User } from "@supabase/supabase-js";
 
 interface AuthState {
   user: User | null;
+  session: Session | null;
   loading: boolean;
-  recoveryMode: boolean;
-  setUser: (user: User | null) => void;
+  setUser: (user: User | null, session: Session | null) => void;
+  setLoading: (value: boolean) => void;
   clearUser: () => void;
   fetchUser: () => Promise<void>;
   logout: () => Promise<void>;
-  setRecoveryMode: (value: boolean) => void;
 }
 
-const store = persist<AuthState>(
-  (set) => ({
-    user: null,
-    loading: true,
-    recoveryMode: false,
+export const useAuthStore = create<AuthState>((set) => ({
+  user: null,
+  session: null,
+  loading: true,
 
-    setUser: (user) => set({ user }),
-    clearUser: () => set({ user: null }),
-    setRecoveryMode: (value: boolean) => set({ recoveryMode: value }),
+  setLoading: (value: boolean) => set({ loading: value }),
+  setUser: (user, session) => set({ user, session }),
+  clearUser: () => set({ user: null }),
 
-    fetchUser: async () => {
+  fetchUser: async () => {
+    set({ loading: true });
+    try {
       const { data } = await supabase.auth.getUser();
-      set({ user: data?.user ?? null, loading: false });
-    },
+      set({ user: data?.user ?? null });
+    } finally {
+      set({ loading: false });
+    }
+  },
 
-    logout: async () => {
-      await supabase.auth.signOut();
-      set({ user: null, recoveryMode: false });
-      await (useAuthStore as any).persist?.clearStorage?.();
-    },
-  }),
-  {
-    name: "auth-storage",
-    partialize: (state) => ({
-      recoveryMode: state.recoveryMode,
-      onRehydrateStorage: () => async (state) => {
-        // Esperar a que Supabase emita el evento correcto
-        const { data: authListener } = supabase.auth.onAuthStateChange(
-          (event) => {
-            if (event === "PASSWORD_RECOVERY") {
-              state?.setRecoveryMode(true);
-            }
-          }
-        );
-
-        state?.setState({ rehydrated: true });
-
-        return () => {
-          authListener.subscription.unsubscribe();
-        };
-      },
-    }),
-  }
-);
-
-export const useAuthStore = create(devtools(store));
+  logout: async () => {
+    await supabase.auth.signOut();
+    set({ user: null });
+  },
+}));

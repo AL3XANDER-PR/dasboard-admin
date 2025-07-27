@@ -7,24 +7,25 @@ const queryClient = new QueryClient();
 
 export const AppProviders = ({ children }: { children: ReactNode }) => {
   const setUser = useAuthStore((s) => s.setUser);
-  const setRecoveryMode = useAuthStore((s) => s.setRecoveryMode);
+  const setLoading = useAuthStore((s) => s.setLoading);
 
   useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
+    const initAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      setUser(data.session?.user ?? null, data.session ?? null);
+      setLoading(false);
+    };
 
-        if (event === "PASSWORD_RECOVERY") {
-          console.log("Sesión de recuperación detectada");
-          setRecoveryMode(true);
-        } else {
-          setRecoveryMode(false); // 🔑 Importante: desactivar si no es recuperación
-        }
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_, session) => {
+        setUser(session?.user ?? null, session ?? null);
       }
     );
 
+    initAuth();
+
     return () => listener.subscription.unsubscribe();
-  }, []);
+  }, [setUser, setLoading]);
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

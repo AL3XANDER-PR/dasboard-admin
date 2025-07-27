@@ -2,12 +2,13 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/store/auth.store";
 
 export const PublicOnlyRoute = () => {
-  const { user, loading, recoveryMode } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const loading = useAuthStore((s) => s.loading);
+  console.log("💻 - PublicOnlyRoute - loading:", loading);
 
   if (loading) return null;
 
-  // 🛡️ Si hay sesión y NO está en recovery, redirigir al home
-  if (user && !recoveryMode) {
+  if (user) {
     return <Navigate to="/" replace />;
   }
 

@@ -51,6 +51,15 @@ export default function UpdatePassword({
     },
   });
 
+  const { setRecoveryMode, recoveryMode } = useAuthStore();
+
+  useEffect(() => {
+    if (!recoveryMode) {
+      // redirigir si llega sin flujo válido
+      navigate("/");
+    }
+  }, []);
+
   const onSubmit = async (data: LoginFormData) => {
     const { error } = await supabase.auth.updateUser({
       password: data.password,

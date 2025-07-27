@@ -1,25 +1,18 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/store/auth.store";
 import { DashboardProvider } from "@/components/dashboard-provider";
 
-const PUBLIC_ROUTES = ["/login", "/register", "/update-password"]; // ajusta según tus rutas públicas
-
 export const ProtectedRoute = () => {
-  const { user, loading, recoveryMode } = useAuthStore();
-  const location = useLocation();
-
-  const currentPath = location.pathname;
-  const isPublic = PUBLIC_ROUTES.includes(currentPath);
+  const user = useAuthStore((s) => s.user);
+  const loading = useAuthStore((s) => s.loading);
+  console.log("💻 - ProtectedRoute:", loading);
 
   if (loading) return null;
 
-  if (!user && !isPublic) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!user) {
+    return <Navigate to="/login" />;
   }
 
-  if (user && recoveryMode && !isPublic) {
-    return <Navigate to="/login" replace />;
-  }
   return (
     <DashboardProvider>
       <Outlet />
