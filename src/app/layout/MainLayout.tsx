@@ -19,8 +19,11 @@ import { useFullscreen } from "@/hooks/useFullscreen";
 import { AppSidebar } from "@/modules/dashboard/components/AppSidebar";
 import { Fullscreen, Maximize, Minimize, Shrink } from "lucide-react";
 import { Outlet } from "react-router-dom";
+import type { FC, PropsWithChildren, JSX } from "react";
 
-export const MainLayout = () => {
+export default function MainLayout({
+  children,
+}: PropsWithChildren): JSX.Element {
   const { isFullscreen, toggleFullscreen } = useFullscreen();
   const { layout, setLayout } = useLayout();
 
@@ -85,10 +88,11 @@ export const MainLayout = () => {
           >
             <div className="flex flex-col gap-4 px-6 md:px-12 md:gap-6 py-4 md:py-6">
               <Outlet />
+              {/* {children} */}
             </div>
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
   );
-};
+}

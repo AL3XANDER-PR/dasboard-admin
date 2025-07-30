@@ -1,8 +1,11 @@
 // src/app/layout/AuthLayout.tsx
 
+import type { PropsWithChildren, JSX } from "react";
 import { Outlet } from "react-router-dom";
 
-export const AuthLayout = () => {
+export default function AuthLayout({
+  children,
+}: PropsWithChildren): JSX.Element {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="bg-muted relative hidden lg:block">
@@ -19,7 +22,7 @@ export const AuthLayout = () => {
           </a>
         </div>
         <img
-          src="https://images.pexels.com/photos/6752422/pexels-photo-6752422.jpeg"
+          src="https://i.ibb.co/MDrRC6Dz/pexels-evgeniy-grozev-814830.jpg"
           alt="Image"
           className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
         />
@@ -35,10 +38,11 @@ export const AuthLayout = () => {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-sm">
-            <Outlet />
+            {/* <Outlet /> */}
+            {children}
           </div>
         </div>
       </div>
     </div>
   );
-};
+}

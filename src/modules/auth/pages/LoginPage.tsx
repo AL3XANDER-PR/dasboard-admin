@@ -60,7 +60,7 @@ export default function LoginPage({
 
     if (authData.user) {
       setError(null);
-      setUser(authData.user);
+      setUser(authData.user, authData.session);
       navigate("/"); // ir al dashboard (raíz protegida)
     }
   };

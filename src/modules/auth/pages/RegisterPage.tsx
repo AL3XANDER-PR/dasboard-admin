@@ -64,7 +64,7 @@ export default function RegisterPage({
 
     if (authData.user) {
       setError(null);
-      setUser(authData.user);
+      setUser(authData.user, authData.session);
       navigate("/");
     }
   };

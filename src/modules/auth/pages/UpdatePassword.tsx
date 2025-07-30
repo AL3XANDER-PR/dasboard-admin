@@ -4,7 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Form,
   FormField,
@@ -16,12 +16,8 @@ import {
 } from "@/components/ui/form";
 import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
-import { AlertCircleIcon, Loader2Icon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useEffect, useState } from "react";
-import { router } from "@/app/router";
-import { markPasswordAsUpdated } from "@/app/guards/ProtectedRoute";
+import { Loader2Icon } from "lucide-react";
 
 const loginSchema = z
   .object({
@@ -40,7 +36,6 @@ export default function UpdatePassword({
   ...props
 }: React.ComponentProps<"form">) {
   const navigate = useNavigate();
-  const setRecoveryMode = useAuthStore((state) => state.setRecoveryMode);
   const logout = useAuthStore((state) => state.logout);
 
   const form = useForm<LoginFormData>({
@@ -50,15 +45,6 @@ export default function UpdatePassword({
       confirmPassword: "",
     },
   });
-
-  const { setRecoveryMode, recoveryMode } = useAuthStore();
-
-  useEffect(() => {
-    if (!recoveryMode) {
-      // redirigir si llega sin flujo válido
-      navigate("/");
-    }
-  }, []);
 
   const onSubmit = async (data: LoginFormData) => {
     const { error } = await supabase.auth.updateUser({
@@ -70,7 +56,6 @@ export default function UpdatePassword({
       alert("Contraseña cambiada con éxito");
       await logout();
 
-      setRecoveryMode(false);
       navigate("/login");
     }
   };
