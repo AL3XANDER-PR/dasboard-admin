@@ -19,11 +19,9 @@ import { useFullscreen } from "@/hooks/useFullscreen";
 import { AppSidebar } from "@/modules/dashboard/components/AppSidebar";
 import { Fullscreen, Maximize, Minimize, Shrink } from "lucide-react";
 import { Outlet } from "react-router-dom";
-import type { FC, PropsWithChildren, JSX } from "react";
+import type { JSX } from "react";
 
-export default function MainLayout({
-  children,
-}: PropsWithChildren): JSX.Element {
+export default function MainLayout(): JSX.Element {
   const { isFullscreen, toggleFullscreen } = useFullscreen();
   const { layout, setLayout } = useLayout();
 

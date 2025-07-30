@@ -1,40 +1,100 @@
 import { Route, Routes, type RouteObject } from "react-router-dom";
-import type { DBRoute } from "./types";
+import type { DBRoute, GuardKey } from "./types";
 import { COMPONENTS_MAP, GUARDS_MAP, LAYOUTS_MAP } from "./components-map";
 import React, { Suspense } from "react";
+
+export type FlatDBRoute = DBRoute & { children?: FlatDBRoute[] };
 
 // Helper para envolver elementos lazy con Suspense
 function withSuspense(element: React.ReactNode) {
   return <Suspense fallback={<div>Cargando...</div>}>{element}</Suspense>;
 }
 
+// Construye un árbol de rutas desde una lista plana
+export function buildRouteTreeFromFlatList(
+  flatRoutes: DBRoute[]
+): FlatDBRoute[] {
+  const routeMap = new Map<string | number, FlatDBRoute>();
+
+  for (const route of flatRoutes) {
+    routeMap.set(route.id, { ...route, children: [] });
+  }
+
+  const rootRoutes: FlatDBRoute[] = [];
+
+  for (const route of routeMap.values()) {
+    if (route.parentId != null) {
+      const parent = routeMap.get(route.parentId);
+      if (parent) {
+        parent.children!.push(route);
+      }
+    } else {
+      rootRoutes.push(route);
+    }
+  }
+
+  return rootRoutes;
+}
+
 export function generateRoutesFromDB(dbRoutes: DBRoute[]): RouteObject[] {
-  const groupedByGuard = {
-    public: [] as RouteObject[],
-    private: [] as RouteObject[],
-    none: [] as RouteObject[],
+  const tree = buildRouteTreeFromFlatList(dbRoutes);
+
+  const groupedByGuard: Record<GuardKey, RouteObject[]> = {
+    public: [],
+    private: [],
+    none: [],
   };
 
-  for (const route of dbRoutes) {
+  function getFullPath(route: FlatDBRoute): string | undefined {
+    if (route.index) return undefined;
+    const segments = [route.path];
+    if (route.params) segments.push(route.params);
+    return segments.join("/");
+  }
+
+  function convertToRouteObject(route: FlatDBRoute): RouteObject {
     const Page = COMPONENTS_MAP[route.component];
-    const Layout = LAYOUTS_MAP[route.layout];
+    const routeChildren = route.children?.map(convertToRouteObject);
 
-    const element = withSuspense(
-      <Layout>
-        <Page />
-      </Layout>
-    );
+    const fullPath = getFullPath(route);
 
-    const routeObject: RouteObject = route.index
-      ? { index: true, element }
-      : { path: route.path, element };
+    const routeElement = withSuspense(<Page />);
 
-    groupedByGuard[route.guard].push(routeObject);
+    // Si es raíz, aplicar layout
+    if (route.parentId == null) {
+      const Layout = LAYOUTS_MAP[route.layout];
+      return {
+        path: fullPath,
+        index: route.index,
+        element: withSuspense(<Layout />),
+        children: [
+          {
+            path: route.index ? undefined : "",
+            index: route.index,
+            element: routeElement,
+          },
+          ...(routeChildren || []),
+        ],
+      };
+    }
+
+    return {
+      path: fullPath,
+      index: route.index,
+      element: routeElement,
+      children: routeChildren,
+    };
+  }
+
+  for (const route of tree) {
+    const group = groupedByGuard[route.guard];
+    if (group) {
+      group.push(convertToRouteObject(route));
+    }
   }
 
   const routes: RouteObject[] = [];
 
-  // Public routes (usando guard)
   if (GUARDS_MAP.public) {
     routes.push({
       element: withSuspense(<GUARDS_MAP.public />),
@@ -42,37 +102,37 @@ export function generateRoutesFromDB(dbRoutes: DBRoute[]): RouteObject[] {
     });
   }
 
-  // Private routes (usando guard)
   if (GUARDS_MAP.private) {
     routes.push({
-      path: "/",
       element: withSuspense(<GUARDS_MAP.private />),
       children: groupedByGuard.private,
     });
   }
-  // Rutas sin guardia
+
   routes.push(...groupedByGuard.none);
 
-  // 404
   routes.push({
     path: "*",
     element: withSuspense(<COMPONENTS_MAP.NotFoundRouter />),
   });
 
-  console.log("🔧 Rutas generadas:", routes);
-
   return routes;
 }
 
-// Componente auxiliar para renderizar Outlet con rutas hijas
-function OutletRoutes({ routes }: { routes: RouteObject[] }) {
-  console.log("💻 - OutletRoutes - routes:", routes);
+// Renderiza rutas anidadas con <Outlet />
+function renderRoute(route: RouteObject, key: number): React.ReactNode {
   return (
-    <Routes>
-      {routes.map((route, i) => {
-        const { path, index, element } = route;
-        return <Route key={i} path={path} index={index} element={element} />;
-      })}
-    </Routes>
+    <Route
+      key={key}
+      path={route.path}
+      index={route?.index}
+      element={route.element}
+    >
+      {route.children?.map((child, i) => renderRoute(child, i))}
+    </Route>
   );
+}
+
+export function OutletRoutes({ routes }: { routes: RouteObject[] }) {
+  return <Routes>{routes.map((route, i) => renderRoute(route, i))}</Routes>;
 }

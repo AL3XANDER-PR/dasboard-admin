@@ -1,11 +1,9 @@
 // src/app/layout/AuthLayout.tsx
 
-import type { PropsWithChildren, JSX } from "react";
+import type { JSX } from "react";
 import { Outlet } from "react-router-dom";
 
-export default function AuthLayout({
-  children,
-}: PropsWithChildren): JSX.Element {
+export default function AuthLayout(): JSX.Element {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="bg-muted relative hidden lg:block">
@@ -38,8 +36,8 @@ export default function AuthLayout({
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-sm">
-            {/* <Outlet /> */}
-            {children}
+            <Outlet />
+            {/* {children} */}
           </div>
         </div>
       </div>
