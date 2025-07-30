@@ -56,12 +56,12 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Home",
+          url: "/",
         },
         {
-          title: "Starred",
-          url: "#",
+          title: "Usuarios",
+          url: "/usuarios",
         },
         {
           title: "Settings",

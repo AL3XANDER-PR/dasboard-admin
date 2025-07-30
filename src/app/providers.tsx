@@ -1,31 +1,55 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// src/app/providers.tsx
 import { useEffect, type ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
+import { useRouteStore } from "@/store/route.store";
+import { publicRoutes } from "./router";
+import { fetchPrivateRoutes } from "@/lib/fetchPrivateRoutes";
 
 const queryClient = new QueryClient();
 
 export const AppProviders = ({ children }: { children: ReactNode }) => {
   const setUser = useAuthStore((s) => s.setUser);
   const setLoading = useAuthStore((s) => s.setLoading);
+  const setRoutes = useRouteStore((s) => s.setRoutes);
+
+  // Maneja rutas según sesión
+  const handleSession = async (session: Session | null) => {
+    setUser(session?.user ?? null, session ?? null);
+    if (session?.user) {
+      const privateRoutes = await fetchPrivateRoutes();
+      setRoutes([...publicRoutes, ...privateRoutes]);
+    } else {
+      setRoutes(publicRoutes);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const initAuth = async () => {
+    let unsubscribe: () => void;
+
+    const init = async () => {
+      // Sesión persistente
       const { data } = await supabase.auth.getSession();
-      setUser(data.session?.user ?? null, data.session ?? null);
-      setLoading(false);
+      await handleSession(data.session);
+
+      // Suscripción a cambios de sesión
+      const { data: listener } = supabase.auth.onAuthStateChange(
+        async (_event, session) => {
+          await handleSession(session);
+        }
+      );
+
+      unsubscribe = () => listener.subscription.unsubscribe();
     };
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_, session) => {
-        setUser(session?.user ?? null, session ?? null);
-      }
-    );
+    init();
 
-    initAuth();
-
-    return () => listener.subscription.unsubscribe();
-  }, [setUser, setLoading]);
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
