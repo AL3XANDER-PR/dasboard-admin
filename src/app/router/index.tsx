@@ -23,4 +23,11 @@ export const publicRoutes: DBRoute[] = [
     layout: "AuthLayout",
     guard: "public",
   },
+  {
+    id: "dashboard",
+    path: "/",
+    component: "DashboardPage",
+    layout: "MainLayout",
+    guard: "private",
+  },
 ];

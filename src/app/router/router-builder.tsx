@@ -133,6 +133,38 @@ function renderRoute(route: RouteObject, key: number): React.ReactNode {
   );
 }
 
+function expandDynamicModes(routes: DBRoute[]): DBRoute[] {
+  const expanded: DBRoute[] = [];
+
+  for (const route of routes) {
+    if (!route.params) {
+      expanded.push(route);
+      continue;
+    }
+
+    let parsedModes: Record<string, string>;
+    try {
+      parsedModes = JSON.parse(route.params);
+    } catch {
+      console.warn(`Invalid params for route ${route.path}`);
+      expanded.push(route);
+      continue;
+    }
+
+    for (const [modeKey, subpath] of Object.entries(parsedModes)) {
+      expanded.push({
+        ...route,
+        path: `${route.path}/${subpath}`.replace(/\/+/g, "/"), // evita dobles //
+        params: undefined, // ya expandido
+        component: route.component, // puede ser igual o podrías variar según el modo
+        mode: modeKey, // opcional: si lo necesitas en el componente
+      });
+    }
+  }
+
+  return expanded;
+}
+
 export function OutletRoutes({ routes }: { routes: RouteObject[] }) {
   return <Routes>{routes.map((route, i) => renderRoute(route, i))}</Routes>;
 }

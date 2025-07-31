@@ -13,7 +13,8 @@ export const COMPONENTS_MAP = {
   UpdatePassword: lazy(() => import("@/modules/auth/pages/UpdatePassword")),
   NotFoundRouter: lazy(() => import("@/shared/pages/NotFoundRouter")),
   DashboardPage: lazy(() => import("@/modules/dashboard/pages/DashboardPage")),
-  HomePage: lazy(() => import("@/modules/dashboard/pages/HomePage")),
+  UsuariosPage: lazy(() => import("@/modules/dashboard/pages/UsuariosPage")),
+  EditPage: lazy(() => import("@/modules/dashboard/pages/EditPage")),
 } as const satisfies Record<string, LazyExoticComponent<FC>>;
 
 export const LAYOUTS_MAP = {

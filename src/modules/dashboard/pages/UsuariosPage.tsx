@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-const HomePage = () => {
+const UsuariosPage = () => {
   const { id } = useParams();
   console.log("💻 - HomePage - usuarioId:", id);
   return (
@@ -18,7 +18,7 @@ const HomePage = () => {
     </div>
   );
 };
-export default HomePage;
+export default UsuariosPage;
 
 // [{
 //   path: "/dashboard",

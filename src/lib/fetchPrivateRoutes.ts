@@ -8,7 +8,8 @@ export async function fetchPrivateRoutes(): Promise<DBRoute[]> {
     const { data, error } = await supabase
       .from("routes")
       .select("*")
-      .eq("guard", "private");
+      .eq("guard", "private")
+      .eq("active", true);
     console.log("💻 - fetchPrivateRoutes - data:", data);
 
     // if (!data) throw new Error("Error en fetch de rutas");
