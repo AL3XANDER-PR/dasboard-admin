@@ -13,7 +13,6 @@ export const useRouteStore = create<RouteState>((set) => ({
   routes: publicRoutes,
   setRoutes: (routes) => set({ routes }),
   resetRoutes: () => {
-    console.log(publicRoutes);
     set({ routes: publicRoutes });
   },
 }));

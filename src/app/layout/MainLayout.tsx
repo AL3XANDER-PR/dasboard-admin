@@ -19,7 +19,7 @@ import { useFullscreen } from "@/hooks/useFullscreen";
 import { AppSidebar } from "@/modules/dashboard/components/AppSidebar";
 import { Fullscreen, Maximize, Minimize, Shrink } from "lucide-react";
 import { Outlet } from "react-router-dom";
-import type { JSX } from "react";
+import { type JSX } from "react";
 
 export default function MainLayout(): JSX.Element {
   const { isFullscreen, toggleFullscreen } = useFullscreen();
@@ -73,9 +73,6 @@ export default function MainLayout(): JSX.Element {
             </Breadcrumb>
           </div>
         </header>
-        {/* <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-            <Outlet />
-          </div> */}
         <div className="flex flex-1 flex-col">
           <div
             className={`@container/main flex flex-1 flex-col gap-2 transition-transform duration-500 ease w-full ${
@@ -86,7 +83,6 @@ export default function MainLayout(): JSX.Element {
           >
             <div className="flex flex-col gap-4 px-6 md:px-12 md:gap-6 py-4 md:py-6">
               <Outlet />
-              {/* {children} */}
             </div>
           </div>
         </div>
