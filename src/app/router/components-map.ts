@@ -6,16 +6,31 @@ import {
   type PropsWithChildren,
 } from "react";
 
-export const COMPONENTS_MAP = {
-  LoginPage: lazy(() => import("@/modules/auth/pages/LoginPage")),
-  RegisterPage: lazy(() => import("@/modules/auth/pages/RegisterPage")),
-  ForgotPassword: lazy(() => import("@/modules/auth/pages/ForgotPassword")),
-  UpdatePassword: lazy(() => import("@/modules/auth/pages/UpdatePassword")),
-  NotFoundRouter: lazy(() => import("@/shared/pages/NotFoundRouter")),
-  DashboardPage: lazy(() => import("@/modules/dashboard/pages/DashboardPage")),
-  UsuariosPage: lazy(() => import("@/modules/dashboard/pages/UsuariosPage")),
-  EditPage: lazy(() => import("@/modules/dashboard/pages/EditPage")),
-} as const satisfies Record<string, LazyExoticComponent<FC>>;
+// export const COMPONENTS_MAP = {
+//   LoginPage: lazy(() => import("@/modules/auth/pages/LoginPage")),
+//   RegisterPage: lazy(() => import("@/modules/auth/pages/RegisterPage")),
+//   ForgotPassword: lazy(() => import("@/modules/auth/pages/ForgotPassword")),
+//   UpdatePassword: lazy(() => import("@/modules/auth/pages/UpdatePassword")),
+//   NotFoundRouter: lazy(() => import("@/shared/pages/NotFoundRouter")),
+//   DashboardPage: lazy(() => import("@/modules/dashboard/pages/DashboardPage")),
+//   UsuariosPage: lazy(() => import("@/modules/dashboard/pages/UsuariosPage")),
+//   EditPage: lazy(() => import("@/modules/dashboard/pages/EditPage")),
+// } as const satisfies Record<string, LazyExoticComponent<FC>>;
+
+const modules = import.meta.glob("@/modules/**/pages/**/*.tsx");
+
+// Crea el mapa dinámico
+export const COMPONENTS_MAP = Object.entries(modules).reduce(
+  (acc, [path, importer]) => {
+    const match = path.match(/\/([^/]+)\.tsx$/);
+    if (!match) return acc;
+
+    const componentName = match[1]; // Por ejemplo: LoginPage
+    acc[componentName] = lazy(importer as () => Promise<{ default: FC }>);
+    return acc;
+  },
+  {} as Record<string, LazyExoticComponent<FC>>
+);
 
 export const LAYOUTS_MAP = {
   AuthLayout: lazy(() => import("@/app/layout/AuthLayout")),
