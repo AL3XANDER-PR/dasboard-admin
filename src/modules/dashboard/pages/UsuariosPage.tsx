@@ -1,7 +1,6 @@
 import { useParams } from "react-router-dom";
 const UsuariosPage = () => {
   const { id } = useParams();
-  console.log("💻 - HomePage - usuarioId:", id);
   return (
     <div>
       {id ? (

@@ -8,6 +8,7 @@ export const publicRoutes: DBRoute[] = [
     component: "LoginPage",
     layout: "AuthLayout",
     guard: "public",
+    parent_id: null,
   },
   {
     id: "register",
@@ -15,6 +16,7 @@ export const publicRoutes: DBRoute[] = [
     component: "RegisterPage",
     layout: "AuthLayout",
     guard: "public",
+    parent_id: null,
   },
   {
     id: "forgot-password",
@@ -22,6 +24,7 @@ export const publicRoutes: DBRoute[] = [
     component: "ForgotPassword",
     layout: "AuthLayout",
     guard: "public",
+    parent_id: null,
   },
   {
     id: "dashboard",
@@ -29,5 +32,6 @@ export const publicRoutes: DBRoute[] = [
     component: "DashboardPage",
     layout: "MainLayout",
     guard: "private",
+    parent_id: null,
   },
 ];

@@ -10,30 +10,43 @@ function withSuspense(element: React.ReactNode) {
   return <Suspense fallback={<div>Cargando...</div>}>{element}</Suspense>;
 }
 
-// Construye un árbol de rutas desde una lista plana
 export function buildRouteTreeFromFlatList(
   flatRoutes: DBRoute[]
 ): FlatDBRoute[] {
   const routeMap = new Map<string | number, FlatDBRoute>();
+  const augmentedRoutes: FlatDBRoute[] = [];
 
   for (const route of flatRoutes) {
-    routeMap.set(route.id, { ...route, children: [] });
-  }
+    const enrichedRoute = { ...route, children: [] };
+    routeMap.set(route.id, enrichedRoute);
+    augmentedRoutes.push(enrichedRoute);
 
-  const rootRoutes: FlatDBRoute[] = [];
-
-  for (const route of routeMap.values()) {
-    if (route.parentId != null) {
-      const parent = routeMap.get(route.parentId);
-      if (parent) {
-        parent.children!.push(route);
-      }
-    } else {
-      rootRoutes.push(route);
+    // 👇 Agrega una versión sin params si tiene `params`
+    if (route.params) {
+      const id = `${route.id}-noparam`;
+      augmentedRoutes.push({
+        ...route,
+        id,
+        path: route.path,
+        params: undefined,
+        index: false,
+        parent_id: route.parent_id,
+        component: route.component, // o lo que desees mostrar
+        children: [],
+      });
     }
   }
 
-  return rootRoutes;
+  const tree: FlatDBRoute[] = [];
+  for (const route of augmentedRoutes) {
+    if (route.parent_id != null && routeMap.has(route.parent_id)) {
+      routeMap.get(route.parent_id)!.children!.push(route);
+    } else {
+      tree.push(route);
+    }
+  }
+
+  return tree;
 }
 
 export function generateRoutesFromDB(dbRoutes: DBRoute[]): RouteObject[] {
@@ -57,11 +70,12 @@ export function generateRoutesFromDB(dbRoutes: DBRoute[]): RouteObject[] {
     const routeChildren = route.children?.map(convertToRouteObject);
 
     const fullPath = getFullPath(route);
+    console.log("💻 - convertToRouteObject - fullPath:", fullPath);
 
     const routeElement = withSuspense(<Page />);
 
     // Si es raíz, aplicar layout
-    if (route.parentId == null) {
+    if (route?.parent_id == null) {
       const Layout = LAYOUTS_MAP[route.layout];
       return {
         path: fullPath,
@@ -91,6 +105,7 @@ export function generateRoutesFromDB(dbRoutes: DBRoute[]): RouteObject[] {
     if (group) {
       group.push(convertToRouteObject(route));
     }
+    // console.log("💻 - generateRoutesFromDB - group:", group);
   }
 
   const routes: RouteObject[] = [];
@@ -131,38 +146,6 @@ function renderRoute(route: RouteObject, key: number): React.ReactNode {
       {route.children?.map((child, i) => renderRoute(child, i))}
     </Route>
   );
-}
-
-function expandDynamicModes(routes: DBRoute[]): DBRoute[] {
-  const expanded: DBRoute[] = [];
-
-  for (const route of routes) {
-    if (!route.params) {
-      expanded.push(route);
-      continue;
-    }
-
-    let parsedModes: Record<string, string>;
-    try {
-      parsedModes = JSON.parse(route.params);
-    } catch {
-      console.warn(`Invalid params for route ${route.path}`);
-      expanded.push(route);
-      continue;
-    }
-
-    for (const [modeKey, subpath] of Object.entries(parsedModes)) {
-      expanded.push({
-        ...route,
-        path: `${route.path}/${subpath}`.replace(/\/+/g, "/"), // evita dobles //
-        params: undefined, // ya expandido
-        component: route.component, // puede ser igual o podrías variar según el modo
-        mode: modeKey, // opcional: si lo necesitas en el componente
-      });
-    }
-  }
-
-  return expanded;
 }
 
 export function OutletRoutes({ routes }: { routes: RouteObject[] }) {

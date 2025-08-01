@@ -6,7 +6,7 @@ export type DBRoute = {
   component: ComponentKey;
   layout: LayoutKey;
   guard: GuardKey;
-  parentId?: string | number | null;
+  parent_id?: string | number | null;
   index?: boolean;
   params?: string;
 };

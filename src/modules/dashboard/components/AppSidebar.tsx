@@ -161,6 +161,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const handleLogout = async () => {
     await logout();
     navigate("/login"); // redirige tras logout
+    console.log("logout");
   };
   const userSession = useAuthStore((s) => s.user);
   const user = {

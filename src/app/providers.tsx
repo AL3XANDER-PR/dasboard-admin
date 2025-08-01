@@ -6,6 +6,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { useRouteStore } from "@/store/route.store";
 import { publicRoutes } from "./router";
 import { fetchPrivateRoutes } from "@/lib/fetchPrivateRoutes";
+import type { Session } from "@supabase/supabase-js";
 
 const queryClient = new QueryClient();
 
