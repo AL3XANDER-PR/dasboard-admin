@@ -28,6 +28,7 @@ import { NavUser } from "./nav-user";
 import { Link, useNavigate } from "react-router-dom";
 import { NavMain } from "./nav-main";
 import { useAuthStore } from "@/store/auth.store";
+import { useRouteStore } from "@/store/route.store";
 
 // This is sample data.
 const data = {
@@ -156,11 +157,13 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const logout = useAuthStore((s) => s.logout);
+  const resetRoutes = useRouteStore((s) => s.resetRoutes);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login"); // redirige tras logout
+    resetRoutes();
+    navigate("/login", { replace: true }); // <-- importante
     console.log("logout");
   };
   const userSession = useAuthStore((s) => s.user);

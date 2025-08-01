@@ -9,4 +9,5 @@ export type DBRoute = {
   parent_id?: string | number | null;
   index?: boolean;
   params?: string;
+  name?: string;
 };

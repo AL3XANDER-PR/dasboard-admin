@@ -70,7 +70,6 @@ export function generateRoutesFromDB(dbRoutes: DBRoute[]): RouteObject[] {
     const routeChildren = route.children?.map(convertToRouteObject);
 
     const fullPath = getFullPath(route);
-    console.log("💻 - convertToRouteObject - fullPath:", fullPath);
 
     const routeElement = withSuspense(<Page />);
 

@@ -12,5 +12,8 @@ interface RouteState {
 export const useRouteStore = create<RouteState>((set) => ({
   routes: publicRoutes,
   setRoutes: (routes) => set({ routes }),
-  resetRoutes: () => set({ routes: publicRoutes }),
+  resetRoutes: () => {
+    console.log(publicRoutes);
+    set({ routes: publicRoutes });
+  },
 }));

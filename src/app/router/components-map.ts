@@ -31,6 +31,7 @@ export const COMPONENTS_MAP = Object.entries(modules).reduce(
   },
   {} as Record<string, LazyExoticComponent<FC>>
 );
+console.log("💻 - COMPONENTS_MAP:", COMPONENTS_MAP);
 
 export const LAYOUTS_MAP = {
   AuthLayout: lazy(() => import("@/app/layout/AuthLayout")),
